@@ -80,12 +80,12 @@ def clear_folder(folder_path):
 
 # ------------------- 模型初始化 ---------------
 # --- SenceVoice-语音识别模型
-model_dir = r"E:\2_PYTHON\Project\GPT\QWen\pretrained_models\SenseVoiceSmall"
+model_dir = r"iic/SenseVoiceSmall"
 model_senceVoice = AutoModel( model=model_dir, trust_remote_code=True, )
 
 # --- QWen2.5大语言模型 ---
 # model_name = r":\2_PYTHON\Project\GPT\QWen\Qwen2.5-0.5B-Instruct"
-model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-1.5B-Instruct"
+model_name = r"Qwen/Qwen2.5-1.5B-Instruct"
 # model_name = r':\2_PYTHON\Project\GPT\QWen\Qwen2.5-7B-Instruct-GPTQ-Int4'
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
@@ -95,7 +95,7 @@ model = AutoModelForCausalLM.from_pretrained(
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 # --- CosyVoice - 语音合成模型
-cosyvoice = CosyVoice(r'E:\2_PYTHON\Project\GPT\QWen\pretrained_models\CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
+cosyvoice = CosyVoice(r'iic/CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
 # --- CosyVoice - 支持的音色列表
 print(cosyvoice.list_avaliable_spks())
 # ------------------ 模型初始化结束 ----------------
