@@ -45,6 +45,7 @@ video_queue = Queue()
 # 全局变量
 last_active_time = time.time()
 recording_active = True
+playing_active = False
 segments_to_save = []
 saved_intervals = []
 last_vad_end_time = 0  # 上次保存的 VAD 有效段结束时间
@@ -55,7 +56,7 @@ vad.set_mode(VAD_MODE)
 
 # 音频录制线程
 def audio_recorder():
-    global audio_queue, recording_active, last_active_time, segments_to_save, last_vad_end_time
+    global audio_queue, recording_active, playing_active, last_active_time, segments_to_save, last_vad_end_time
     
     p = pyaudio.PyAudio()
     stream = p.open(format=pyaudio.paInt16,
@@ -90,8 +91,12 @@ def audio_recorder():
         if time.time() - last_active_time > NO_SPEECH_THRESHOLD:
             # 检查是否需要保存
             if segments_to_save and segments_to_save[-1][1] > last_vad_end_time:
+                playing_active = True
                 save_audio_video()
                 last_active_time = time.time()
+                while playing_active:
+                    print("播放中...")
+                    time.sleep(1)
             else:
                 pass
                 # print("无新增语音段，跳过保存")
@@ -102,7 +107,7 @@ def audio_recorder():
 
 # 视频录制线程
 def video_recorder():
-    global video_queue, recording_active
+    global video_queue, recording_active, playing_active
     
     cap = cv2.VideoCapture(0)  # 使用默认摄像头
     print("视频录制已开始")
@@ -193,17 +198,21 @@ def save_audio_video():
 
 # --- 播放音频 -
 def play_audio(file_path):
+    global playing_active
+
     try:
         pygame.mixer.init()
         pygame.mixer.music.load(file_path)
         pygame.mixer.music.play()
+        print(f"播放开始{file_path}！")
         while pygame.mixer.music.get_busy():
             time.sleep(1)  # 等待音频播放结束
-        print("播放完成！")
+        print(f"播放完成{file_path}！")
     except Exception as e:
-        print(f"播放失败: {e}")
+        print(f"播放失败{file_path}: {e}")
     finally:
         pygame.mixer.quit()
+        playing_active = False
 
 async def amain(TEXT, VOICE, OUTPUT_FILE) -> None:
     """Main function"""
@@ -212,12 +221,12 @@ async def amain(TEXT, VOICE, OUTPUT_FILE) -> None:
 
 
 # -------- SenceVoice 语音识别 --模型加载-----
-model_dir = r"E:\2_PYTHON\Project\GPT\QWen\pretrained_models\SenseVoiceSmall"
+model_dir = r"iic/SenseVoiceSmall"
 model_senceVoice = AutoModel( model=model_dir, trust_remote_code=True, )
 
 # --- QWen2.5大语言模型 ---
 # model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-0.5B-Instruct"
-model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-1.5B-Instruct"
+model_name = r"Qwen/Qwen2.5-1.5B-Instruct"
 # model_name = r'E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-7B-Instruct-GPTQ-Int4'
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
