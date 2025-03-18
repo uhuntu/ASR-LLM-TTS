@@ -31,7 +31,7 @@ CHUNK = 1024              # 音频块大小
 VAD_MODE = 3              # VAD 模式 (0-3, 数字越大越敏感)
 OUTPUT_DIR = "./output"   # 输出目录
 NO_SPEECH_THRESHOLD = 1   # 无效语音阈值，单位：秒
-folder_path = "./Test_QWen2_VL/"
+folder_path = "./Test_DeepSeek/"
 audio_file_count = 0
 
 # 确保输出目录存在
@@ -45,7 +45,6 @@ video_queue = Queue()
 # 全局变量
 last_active_time = time.time()
 recording_active = True
-playing_active = False
 segments_to_save = []
 saved_intervals = []
 last_vad_end_time = 0  # 上次保存的 VAD 有效段结束时间
@@ -56,7 +55,7 @@ vad.set_mode(VAD_MODE)
 
 # 音频录制线程
 def audio_recorder():
-    global audio_queue, recording_active, playing_active, last_active_time, segments_to_save, last_vad_end_time
+    global audio_queue, recording_active, last_active_time, segments_to_save, last_vad_end_time
     
     p = pyaudio.PyAudio()
     stream = p.open(format=pyaudio.paInt16,
@@ -91,12 +90,8 @@ def audio_recorder():
         if time.time() - last_active_time > NO_SPEECH_THRESHOLD:
             # 检查是否需要保存
             if segments_to_save and segments_to_save[-1][1] > last_vad_end_time:
-                playing_active = True
                 save_audio_video()
                 last_active_time = time.time()
-                while playing_active:
-                    print("播放中...")
-                    time.sleep(1)
             else:
                 pass
                 # print("无新增语音段，跳过保存")
@@ -107,7 +102,7 @@ def audio_recorder():
 
 # 视频录制线程
 def video_recorder():
-    global video_queue, recording_active, playing_active
+    global video_queue, recording_active
     
     cap = cv2.VideoCapture(0)  # 使用默认摄像头
     print("视频录制已开始")
@@ -198,8 +193,6 @@ def save_audio_video():
 
 # --- 播放音频 -
 def play_audio(file_path):
-    global playing_active
-
     try:
         pygame.mixer.init()
         pygame.mixer.music.load(file_path)
@@ -212,7 +205,6 @@ def play_audio(file_path):
         print(f"播放失败{file_path}: {e}")
     finally:
         pygame.mixer.quit()
-        playing_active = False
 
 async def amain(TEXT, VOICE, OUTPUT_FILE) -> None:
     """Main function"""
@@ -227,6 +219,8 @@ model_senceVoice = AutoModel( model=model_dir, trust_remote_code=True, )
 # --- QWen2.5大语言模型 ---
 # model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-0.5B-Instruct"
 model_name = r"Qwen/Qwen2.5-1.5B-Instruct"
+# model_name = r"deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+# model_name = r"deepseek-ai/deepseek-llm-7b-chat"
 # model_name = r'E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-7B-Instruct-GPTQ-Int4'
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
@@ -251,7 +245,7 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
     # ---------SenceVoice --end----------
     # -------- 模型推理阶段，将语音识别结果作为大模型Prompt ------
     messages = [
-        {"role": "system", "content": "你叫千问，是一个18岁的女大学生，性格活泼开朗，说话俏皮"},
+        {"role": "system", "content": "你叫小宸，是一个18岁的女大学生，性格活泼开朗，说话俏皮"},
         {"role": "user", "content": prompt},
     ]
     text = tokenizer.apply_chat_template(
