@@ -45,7 +45,6 @@ video_queue = Queue()
 # 全局变量
 last_active_time = time.time()
 recording_active = True
-playing_active = False
 segments_to_save = []
 saved_intervals = []
 last_vad_end_time = 0  # 上次保存的 VAD 有效段结束时间
@@ -56,15 +55,8 @@ vad.set_mode(VAD_MODE)
 
 # 音频录制线程
 def audio_recorder():
-    global audio_queue, recording_active, playing_active, last_active_time, segments_to_save, last_vad_end_time
-    
-    p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paInt16,
-                    channels=AUDIO_CHANNELS,
-                    rate=AUDIO_RATE,
-                    input=True,
-                    frames_per_buffer=CHUNK)
-    
+    global audio_queue, recording_active, last_active_time, segments_to_save, last_vad_end_time
+
     audio_buffer = []
     print("音频录制已开始")
     
@@ -91,23 +83,19 @@ def audio_recorder():
         if time.time() - last_active_time > NO_SPEECH_THRESHOLD:
             # 检查是否需要保存
             if segments_to_save and segments_to_save[-1][1] > last_vad_end_time:
-                playing_active = True
                 save_audio_video()
                 last_active_time = time.time()
-                while playing_active:
-                    print("播放中...")
-                    time.sleep(1)
+                recording_active = False
+                stream.stop_stream()
             else:
                 pass
                 # print("无新增语音段，跳过保存")
     
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
+    print("音频录制已结束")
 
 # 视频录制线程
 def video_recorder():
-    global video_queue, recording_active, playing_active
+    global video_queue, recording_active
     
     cap = cv2.VideoCapture(0)  # 使用默认摄像头
     print("视频录制已开始")
@@ -198,7 +186,7 @@ def save_audio_video():
 
 # --- 播放音频 -
 def play_audio(file_path):
-    global playing_active
+    global recording_active
 
     try:
         pygame.mixer.init()
@@ -212,7 +200,11 @@ def play_audio(file_path):
         print(f"播放失败{file_path}: {e}")
     finally:
         pygame.mixer.quit()
-        playing_active = False
+        if recording_active == False:
+            recording_active = True
+            stream.start_stream()
+            audio_thread = threading.Thread(target=audio_recorder)
+            audio_thread.start()
 
 async def amain(TEXT, VOICE, OUTPUT_FILE) -> None:
     """Main function"""
@@ -305,6 +297,13 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
 if __name__ == "__main__":
 
     try:
+        p = pyaudio.PyAudio()
+        stream = p.open(format=pyaudio.paInt16,
+                        channels=AUDIO_CHANNELS,
+                        rate=AUDIO_RATE,
+                        input=True,
+                        frames_per_buffer=CHUNK)
+
         # 启动音视频录制线程
         audio_thread = threading.Thread(target=audio_recorder)
         # video_thread = threading.Thread(target=video_recorder)
@@ -321,3 +320,6 @@ if __name__ == "__main__":
         audio_thread.join()
         # video_thread.join()
         print("录制已停止")
+
+        stream.close()
+        p.terminate()
