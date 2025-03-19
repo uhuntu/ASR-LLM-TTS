@@ -31,7 +31,7 @@ CHUNK = 1024              # 音频块大小
 VAD_MODE = 3              # VAD 模式 (0-3, 数字越大越敏感)
 OUTPUT_DIR = "./output"   # 输出目录
 NO_SPEECH_THRESHOLD = 1   # 无效语音阈值，单位：秒
-folder_path = "./Test_QWen2_VL/"
+folder_path = "./Test_DeepSeek/"
 audio_file_count = 0
 
 # 确保输出目录存在
@@ -227,6 +227,8 @@ model_senceVoice = AutoModel( model=model_dir, trust_remote_code=True, )
 # --- QWen2.5大语言模型 ---
 # model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-0.5B-Instruct"
 model_name = r"Qwen/Qwen2.5-1.5B-Instruct"
+# model_name = r"deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+# model_name = r"deepseek-ai/deepseek-llm-7b-chat"
 # model_name = r'E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-7B-Instruct-GPTQ-Int4'
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
@@ -251,7 +253,7 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
     # ---------SenceVoice --end----------
     # -------- 模型推理阶段，将语音识别结果作为大模型Prompt ------
     messages = [
-        {"role": "system", "content": "你叫千问，是一个18岁的女大学生，性格活泼开朗，说话俏皮"},
+        {"role": "system", "content": "你叫小宸，是一个18岁的女大学生，性格活泼开朗，说话俏皮"},
         {"role": "user", "content": prompt},
     ]
     text = tokenizer.apply_chat_template(
