@@ -95,7 +95,8 @@ model = AutoModelForCausalLM.from_pretrained(
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 # --- CosyVoice - 语音合成模型
-cosyvoice = CosyVoice(r'iic/CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
+# cosyvoice = CosyVoice(r'iic/CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
+cosyvoice = CosyVoice(r'/kali/pretrained_models/CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
 # --- CosyVoice - 支持的音色列表
 print(cosyvoice.list_avaliable_spks())
 # ------------------ 模型初始化结束 ----------------
