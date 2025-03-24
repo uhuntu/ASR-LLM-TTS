@@ -58,7 +58,7 @@ def audio_recorder():
     global audio_queue, recording_active, last_active_time, segments_to_save, last_vad_end_time
 
     audio_buffer = []
-    print("音频录制已开始")
+    print("Audio recording started")
     
     while recording_active:
         data = stream.read(CHUNK)
@@ -71,11 +71,11 @@ def audio_recorder():
             vad_result = check_vad_activity(raw_audio)
             
             if vad_result:
-                print("检测到语音活动")
+                print("Voice activity detected")
                 last_active_time = time.time()
                 segments_to_save.append((raw_audio, time.time()))
             else:
-                print("静音中...")
+                print("On mute...")
             
             audio_buffer = []  # 清空缓冲区
         
@@ -91,7 +91,7 @@ def audio_recorder():
                 pass
                 # print("无新增语音段，跳过保存")
     
-    print("音频录制已结束")
+    print("Audio recording has ended")
 
 # 视频录制线程
 def video_recorder():
@@ -171,7 +171,7 @@ def save_audio_video():
     wf.setframerate(AUDIO_RATE)
     wf.writeframes(b''.join(audio_frames))
     wf.close()
-    print(f"音频保存至 {audio_output_path}")
+    print(f"Save audio to {audio_output_path}")
     
     # Inference()
     # 使用线程执行推理
@@ -186,31 +186,23 @@ def save_audio_video():
 
 # --- 播放音频 -
 def play_audio(file_path):
-    global recording_active
-
     try:
         pygame.mixer.init()
         pygame.mixer.music.load(file_path)
         pygame.mixer.music.play()
-        print(f"播放开始{file_path}！")
+        print(f"Playback Start {file_path}！")
         while pygame.mixer.music.get_busy():
             time.sleep(1)  # 等待音频播放结束
-        print(f"播放完成{file_path}！")
+        print(f"Playback completed {file_path}！")
     except Exception as e:
-        print(f"播放失败{file_path}: {e}")
+        print(f"Playback failed {file_path}: {e}")
     finally:
         pygame.mixer.quit()
-        if recording_active == False:
-            recording_active = True
-            stream.start_stream()
-            audio_thread = threading.Thread(target=audio_recorder)
-            audio_thread.start()
 
 async def amain(TEXT, VOICE, OUTPUT_FILE) -> None:
     """Main function"""
     communicate = edge_tts.Communicate(TEXT, VOICE)
     await communicate.save(OUTPUT_FILE)
-
 
 # -------- SenceVoice 语音识别 --模型加载-----
 model_dir = r"iic/SenseVoiceSmall"
@@ -239,8 +231,11 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
         language="en", # "zn", "en", "yue", "ja", "ko", "nospeech"
         use_itn=False,
     )
-    # prompt = res[0]['text'].split(">")[-1]
-    prompt = res[0]['text'].split(">")[-1] + ", keep your answer brief, within 50 words!"
+    prompt = res[0]['text'].split(">")[-1]
+    if len(prompt) < 10:
+        restart()
+        return
+    prompt += ", keep your answer brief, within 50 words!"
     print("ASR OUT:", prompt)
     # ---------SenceVoice --end----------
     # -------- 模型推理阶段，将语音识别结果作为大模型Prompt ------
@@ -287,11 +282,22 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
         used_speaker = "zh-CN-XiaoyiNeural"
     else:
         used_speaker = language_speaker[language]
-        print("检测到语种：", language, "使用音色：", language_speaker[language])
+        print("Detected language: ", language, "Use the sound: ", language_speaker[language])
 
     global audio_file_count
     asyncio.run(amain(text, used_speaker, os.path.join(folder_path,f"sft_{audio_file_count}.mp3")))
     play_audio(f'{folder_path}/sft_{audio_file_count}.mp3')
+
+    restart()
+
+def restart():
+    global recording_active
+
+    if recording_active == False:
+        recording_active = True
+        stream.start_stream()
+        audio_thread = threading.Thread(target=audio_recorder)
+        audio_thread.start()
 
 # 主函数
 if __name__ == "__main__":
@@ -310,16 +316,16 @@ if __name__ == "__main__":
         audio_thread.start()
         # video_thread.start()
         
-        print("按 Ctrl+C 停止录制")
+        print("Press Ctrl+C to stop recording.")
         while True:
             time.sleep(1)
     
     except KeyboardInterrupt:
-        print("录制停止中...")
+        print("Recording stopped...")
         recording_active = False
         audio_thread.join()
         # video_thread.join()
-        print("录制已停止")
+        print("Recording stopped")
 
         stream.close()
         p.terminate()
