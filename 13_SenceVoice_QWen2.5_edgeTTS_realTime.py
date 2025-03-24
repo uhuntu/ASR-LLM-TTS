@@ -236,16 +236,16 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
     res = model_senceVoice.generate(
         input=input_file,
         cache={},
-        language="auto", # "zn", "en", "yue", "ja", "ko", "nospeech"
+        language="en", # "zn", "en", "yue", "ja", "ko", "nospeech"
         use_itn=False,
     )
     # prompt = res[0]['text'].split(">")[-1]
-    prompt = res[0]['text'].split(">")[-1] + "，回答简短一些，保持50字以内！"
+    prompt = res[0]['text'].split(">")[-1] + ", keep your answer brief, within 50 words!"
     print("ASR OUT:", prompt)
     # ---------SenceVoice --end----------
     # -------- 模型推理阶段，将语音识别结果作为大模型Prompt ------
     messages = [
-        {"role": "system", "content": "你叫小宸，是一个18岁的女大学生，性格活泼开朗，说话俏皮"},
+        {"role": "system", "content": "Your name is Xiaochen, you are an 18-year-old female college student, lively and cheerful, and speaks playfully."},
         {"role": "user", "content": prompt},
     ]
     text = tokenizer.apply_chat_template(
