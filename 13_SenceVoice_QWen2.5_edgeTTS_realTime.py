@@ -82,7 +82,7 @@ def audio_recorder():
         # 检查无效语音时间
         if time.time() - last_active_time > NO_SPEECH_THRESHOLD:
             # 检查是否需要保存
-            if segments_to_save and segments_to_save[-1][1] > last_vad_end_time:
+            if len(segments_to_save) > 2 and segments_to_save[-1][1] > last_vad_end_time:
                 save_audio_video()
                 last_active_time = time.time()
                 recording_active = False
