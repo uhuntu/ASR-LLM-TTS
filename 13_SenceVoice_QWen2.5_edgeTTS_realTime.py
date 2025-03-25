@@ -240,7 +240,7 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
     # ---------SenceVoice --end----------
     # -------- 模型推理阶段，将语音识别结果作为大模型Prompt ------
     messages = [
-        {"role": "system", "content": "Your name is Xiaochen, you are an 28-year-old female employee of TES."},
+        {"role": "system", "content": "Your name is Xiaochen, you are an 28-year-old female employee of TES Touch Embedded Solutions (Xiamen) Co., Ltd.."},
         {"role": "user", "content": prompt},
     ]
     text = tokenizer.apply_chat_template(
