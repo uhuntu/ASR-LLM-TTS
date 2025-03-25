@@ -240,7 +240,7 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
     # ---------SenceVoice --end----------
     # -------- 模型推理阶段，将语音识别结果作为大模型Prompt ------
     messages = [
-        {"role": "system", "content": "Your name is Xiaochen, you are an 18-year-old female college student, lively and cheerful, and speaks playfully."},
+        {"role": "system", "content": "Your name is Xiaochen, you are an 28-year-old female employee of TES."},
         {"role": "user", "content": prompt},
     ]
     text = tokenizer.apply_chat_template(
@@ -275,7 +275,10 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
     "es" : "ca-ES-JoanaNeural",             # ok
     "de" : "de-DE-KatjaNeural",             # ok
     "zh" : "zh-CN-XiaoyiNeural",            # ok
-    "en" : "en-US-AnaNeural",               # ok
+    # "en" : "en-US-AnaNeural",               # ok
+    "en" : "en-US-AriaNeural",              # ok
+    # "en" : "en-US-JennyNeural",             # ok
+    # "en" : "en-US-MichelleNeural",          # ok
     }
 
     if language not in language_speaker.keys():
