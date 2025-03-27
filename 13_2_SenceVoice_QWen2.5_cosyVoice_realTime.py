@@ -19,6 +19,9 @@ import asyncio
 from time import sleep
 import langid
 from langdetect import detect
+from cosyvoice.cli.cosyvoice import CosyVoice
+from cosyvoice.utils.file_utils import load_wav
+import torchaudio
 
 # --- 配置huggingFace国内镜像 ---
 import os
@@ -199,6 +202,38 @@ def play_audio(file_path):
     finally:
         pygame.mixer.quit()
 
+import os
+import shutil
+
+def clear_folder(folder_path):
+    # 检查文件夹是否存在
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path, exist_ok=True)
+        print(f"文件夹 '{folder_path}' 不存在，已创建")
+        return
+    
+    # 获取文件夹中的所有文件和子文件夹
+    items = os.listdir(folder_path)
+    
+    # 如果文件夹为空，直接返回
+    if not items:
+        print(f"文件夹 '{folder_path}' 已经为空")
+        return
+    
+    # 遍历文件和文件夹并删除
+    for item in items:
+        item_path = os.path.join(folder_path, item)
+        
+        # 判断是否是文件夹或文件
+        if os.path.isfile(item_path):
+            os.remove(item_path)  # 删除文件
+            print(f"删除文件: {item_path}")
+        elif os.path.isdir(item_path):
+            shutil.rmtree(item_path)  # 删除文件夹及其内容
+            print(f"删除文件夹: {item_path}")
+    
+    print(f"文件夹 '{folder_path}' 已清空")
+
 async def amain(TEXT, VOICE, OUTPUT_FILE) -> None:
     """Main function"""
     communicate = edge_tts.Communicate(TEXT, VOICE)
@@ -220,6 +255,13 @@ model = AutoModelForCausalLM.from_pretrained(
     device_map="auto"
 )
 tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+# --- CosyVoice - 语音合成模型
+# cosyvoice = CosyVoice(r'iic/CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
+cosyvoice = CosyVoice(r'/kali/pretrained_models/CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
+# --- CosyVoice - 支持的音色列表
+print(cosyvoice.list_avaliable_spks())
+# ------------------ 模型初始化结束 ----------------
 
 def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
 
@@ -287,9 +329,24 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
         used_speaker = language_speaker[language]
         print("Detected language: ", language, "Use the sound: ", language_speaker[language])
 
-    global audio_file_count
-    asyncio.run(amain(text, used_speaker, os.path.join(folder_path,f"sft_{audio_file_count}.mp3")))
-    play_audio(f'{folder_path}/sft_{audio_file_count}.mp3')
+    # global audio_file_count
+    # asyncio.run(amain(text, used_speaker, os.path.join(folder_path, f"sft_{audio_file_count}.mp3")))
+    # play_audio(f'{folder_path}/sft_{audio_file_count}.mp3')
+
+    # --- 答复输出文件夹 ---
+    # folder_path = "./out_answer/"
+    clear_folder(folder_path)
+
+    # ['中文女', '中文男', '日语男', '粤语女', '英文女', '英文男', '韩语女']
+    # change stream=True for chunk stream inference
+    index_out = 0
+    for i, j in enumerate(cosyvoice.inference_sft(f'{text}', '中文女', stream=False)):
+        torchaudio.save('{}/sft_{}.wav'.format(folder_path, i), j['tts_speech'], 22050)
+        index_out += 1
+        # play_audio('sft_{}.wav'.format(i))
+
+    for idx in range(index_out):
+        play_audio('{}/sft_{}.wav'.format(folder_path, idx))
 
     restart()
 
