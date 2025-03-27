@@ -31,7 +31,6 @@ def record_audio(filename="output.wav", sample_rate=44100):
     write(filename, sample_rate, (audio_data * 32767).astype(np.int16))
     print(f"录音已保存为 {filename}")
 
-
 # --- 播放音频 -
 def play_audio(file_path):
     try:
