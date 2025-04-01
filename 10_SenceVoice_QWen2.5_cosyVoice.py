@@ -95,9 +95,10 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 # --- CosyVoice - 语音合成模型
 # cosyvoice = CosyVoice(r'iic/CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
-cosyvoice = CosyVoice(r'/kali/pretrained_models/CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
+# cosyvoice = CosyVoice(r'/kali/pretrained_models/CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
+cosyvoice = CosyVoice('/kali/pretrained_models/CosyVoice-300M-SFT', load_jit=False, load_trt=False, fp16=False)
 # --- CosyVoice - 支持的音色列表
-print(cosyvoice.list_avaliable_spks())
+print(cosyvoice.list_available_spks())
 # ------------------ 模型初始化结束 ----------------
 
 while(1):
@@ -147,7 +148,7 @@ while(1):
     # change stream=True for chunk stream inference
     index_out = 0
     for i, j in enumerate(cosyvoice.inference_sft(f'{response}', '中文女', stream=False)):
-        torchaudio.save('{}/sft_{}.wav'.format(folder_path,i), j['tts_speech'], 22050)
+        torchaudio.save('{}/sft_{}.wav'.format(folder_path, i), j['tts_speech'], cosyvoice.sample_rate)
         index_out += 1
         # play_audio('sft_{}.wav'.format(i))
 
