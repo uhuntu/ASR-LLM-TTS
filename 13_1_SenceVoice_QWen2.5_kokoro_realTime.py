@@ -32,7 +32,8 @@ import soundfile as sf
 # 🇺🇸 'a' => American English, 🇬🇧 'b' => British English
 # 🇯🇵 'j' => Japanese: pip install misaki[ja]
 # 🇨🇳 'z' => Mandarin Chinese: pip install misaki[zh]
-root_voice = r'E:\2_PYTHON\Project\TTS\Kokoro-82M\voices'
+# root_voice = r'E:\2_PYTHON\Project\TTS\Kokoro-82M\voices'
+root_voice = r'/kali/pretrained_models/Kokoro-82M/voices'
 
 def tts_kokoro(text, outpath, lid='z', voice_glo='zm_yunjian'):
     global root_voice
@@ -239,12 +240,14 @@ def play_audio(file_path):
 
 
 # -------- SenceVoice 语音识别 --模型加载-----
-model_dir = r"E:\2_PYTHON\Project\GPT\QWen\pretrained_models\SenseVoiceSmall"
+# model_dir = r"E:\2_PYTHON\Project\GPT\QWen\pretrained_models\SenseVoiceSmall"
+model_dir = r"iic/SenseVoiceSmall"
 model_senceVoice = AutoModel( model=model_dir, trust_remote_code=True, )
 
 # --- QWen2.5大语言模型 ---
 # model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-0.5B-Instruct"
-model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-1.5B-Instruct"
+# model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-1.5B-Instruct"
+model_name = r"Qwen/Qwen2.5-1.5B-Instruct"
 # model_name = r'E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-7B-Instruct-GPTQ-Int4'
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
@@ -315,10 +318,10 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
     }
 
     language_spk = {
-        "j" : "jf_nezumi",            # ok
+        "j" : "jf_nezumi",           # ok
         "f" : "ff_siwis",            # ok
         "e" : "em_santa",            # ok
-        "z" : "zm_yunyang",            # ok
+        "z" : "zm_yunyang",          # ok
         "a" : "af_heart",            # ok
     }
 
