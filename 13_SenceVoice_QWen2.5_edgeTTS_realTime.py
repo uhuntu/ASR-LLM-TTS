@@ -31,7 +31,7 @@ CHUNK = 1024              # 音频块大小
 VAD_MODE = 3              # VAD 模式 (0-3, 数字越大越敏感)
 OUTPUT_DIR = "./output"   # 输出目录
 NO_SPEECH_THRESHOLD = 1   # 无效语音阈值，单位：秒
-folder_path = "./Test_DeepSeek/"
+folder_path = "./Test_QWen2_VL/"
 audio_file_count = 0
 
 # 确保输出目录存在
