@@ -228,7 +228,7 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
     res = model_senceVoice.generate(
         input=input_file,
         cache={},
-        language="en", # "zn", "en", "yue", "ja", "ko", "nospeech"
+        language="auto", # "zn", "en", "yue", "ja", "ko", "nospeech"
         use_itn=False,
     )
     prompt = res[0]['text'].split(">")[-1]
